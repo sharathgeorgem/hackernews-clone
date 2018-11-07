@@ -2,7 +2,7 @@
   "name": "hackernews",
   "version": "0.1.0",
   "private": true,
-  "homepage": "http://sharathgeorgem.github.io/hackernews",
+  "homepage": "http://sharathgeorgem.github.io/hackernews-clone",
   "dependencies": {
     "react": "^16.6.0",
     "react-dom": "^16.6.0",
