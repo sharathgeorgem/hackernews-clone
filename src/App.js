@@ -1,21 +1,20 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from 'react'
+import './App.css'
 
 class App extends Component {
-  render() {
+  render () {
+    const user = {
+      firstName: 'Sharath',
+      lastName: 'George M'
+    }
+    console.log(user.lastName)
     return (
-      <div className="App">
-        <div className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h2>Welcome to React</h2>
-        </div>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
+      <div className='App'>
+        <h1>{user.firstName}</h1>
+        <h2>{user.lastName}</h2>
       </div>
-    );
+    )
   }
 }
 
-export default App;
+export default App
