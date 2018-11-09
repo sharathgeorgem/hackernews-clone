@@ -1,79 +1,84 @@
 import React, { Component } from 'react'
 import './App.css'
 
-const DEFAULT_QUERY = 'redux'
+const DEFAULT_QUERY = 'react'
 
 const PATH_BASE = 'https://hn.algolia.com/api/v1'
 const PATH_SEARCH = '/search'
 const PARAM_SEARCH = 'query='
 
-const list = [
-  {
-    title: 'Steam',
-    url: 'https://store.steampowered.com/',
-    author: 'Valve',
-    num_comments: 3,
-    points: 4,
-    objectID: 0
-  },
-  {
-    title: 'Origin',
-    url: 'https://www.origin.com/ind/en-us/store',
-    author: 'Effin EA',
-    num_comments: 2,
-    points: 5,
-    objectID: 1
-  }
-]
-
-const isSearched = searchTerm => item =>
-  item.title.toLowerCase().includes(searchTerm.toLowerCase())
-
 class App extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      list,
-      searchTerm: ''
+      result: null,
+      searchTerm: DEFAULT_QUERY
     }
   }
-  onDismiss = (id) => {
-    const isNotId = item => item.objectID !== id
-    const updatedList = this.state.list.filter(isNotId)
-    this.setState({list: updatedList})
+  setSearchTopStories = result => {
+    this.setState({result})
   }
-  onSearchChange = (event) => {
+  fetchSearchTopStories = searchTerm => {
+    const url = `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}`
+    fetch(url)
+      .then(response => response.json())
+      .then(result => this.setSearchTopStories(result))
+      .catch(error => error)
+  }
+  componentDidMount() {
+    const {searchTerm} = this.state
+    this.fetchSearchTopStories(searchTerm)
+  }
+  onDismiss = id => {
+    const isNotId = item => item.objectID !== id
+    const updatedHits = this.state.result.hits.filter(isNotId)
+    this.setState({
+      result: {...this.state.result, hits: updatedHits}
+    })
+  }
+  onSearchSubmit = (event) => {
+    const {searchTerm} = this.state
+    this.fetchSearchTopStories(searchTerm)
+    event.preventDefault()
+  }
+  onSearchChange = event => {
     this.setState({searchTerm: event.target.value})
   }
   render () {
-    const { searchTerm, list } = this.state
+    const { searchTerm, result } = this.state
+    if(!result) {return null}
     return (
       <div className='page'>
         <div className='interactions'>
           <Search
             value={searchTerm}
             onChange={this.onSearchChange}
+            onSubmit={this.onSearchSubmit}
           >
             Search
           </Search>
         </div>
-        <Table
-          list={list}
-          pattern={searchTerm}
-          onDismiss={this.onDismiss}
-        />
+        { result &&
+           <Table
+            list={result.hits}
+            onDismiss={this.onDismiss}
+          />
+        }
       </div>
     )
   }
 }
 
-const Search = ({value, onChange, children}) =>
-  <form>
-    {children} <input
+const Search = ({value, onChange, onSubmit, children}) =>
+  <form onSubmit={onSubmit}>
+    <input
       type='text'
       value={value}
       onChange={onChange}
     />
+    <button type='submit'>
+      {children}
+    </button>
   </form>
 
 const largeColumn = {
@@ -86,9 +91,9 @@ const smallColumn = {
   width: '10%',
 }
 
-const Table = ({list, pattern, onDismiss}) =>
+const Table = ({list, onDismiss}) =>
   <div className='table'>
-    {list.filter(isSearched(pattern)).map(item =>
+    {list.map(item =>
       <div key={item.objectID} className='table-row'>
         <span style={largeColumn}>
           <a href={item.url}>
